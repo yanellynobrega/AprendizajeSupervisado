@@ -1,0 +1,163 @@
+---
+title: "Becas Crema 2.0"
+author: "Yanelly Nóbrega"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Pasos relizados para la elaboración de la tarea.
+
+
+###Importación de la data y corrección de errores.
+Instalación de paquetes e importación de los mismos los cuales fueron necesarios para realizar la actividad.
+
+
+```{r }
+#install.packages('rpart')
+#install.packages('rpart.plot')
+#install.packages('pROC')
+#install.packages('class')
+#install.packages('RWeka')
+
+#importacion de librerias
+library('rpart')
+library('rpart.plot')
+library('pROC')
+library('RWeka')
+library('class')
+```
+
+Lectura de la vista minable y eliminación de atributos los cuales no se consideraron necesarios para realizar el análisis
+
+```{r}
+datos <- read.csv(
+  file = "C:/Users/Yanelly/Documents/asignacion_2/minable.csv",
+  header = T)
+
+#Eliminacion de atributos no necesarios
+datos[,"cIdentidad"] <- NULL
+datos[,"fNacimiento"] <- NULL
+datos[,"jReprobadas"] <- NULL 
+datos[,"eCivil"] <- NULL
+datos[,"dHabitacion"] <- NULL
+datos[,"cDireccion"] <- NULL 
+datos[,"oSolicitudes"] <- NULL 
+datos[,"aEconomica"] <- NULL
+datos[,"rating"] <- NULL 
+datos[,"sugerencias"] <- NULL 
+```
+
+Correcion de irregularidades detectadas dentro del dataset en donde se visualizaron dos valores los cuales no pertenezcan al tipo de dato categórico  correspondiente al atributo pReside, y dado q el texto encontrado en ambos pertenecia a la categoria "otros" se le asigno el valor 7, también se notó que el atributo "grOdontologicos" no estaba en formato numérico, lo cual es necesario para realizar los cálculos.
+
+```{r}
+datos$pReside[2] = 7  
+datos$pReside[26] = 7 
+datos$pReside = as.integer(datos$pReside) 
+datos$grOdontologicos = as.integer(datos$grOdontologicos)
+
+```
+
+###Generando la data de entrenamiento y prueba
+La data de entrada fue divida en tres partes basÃ¡ndose en los 3 posibles valores: 0,2,3 que puede tomar el atributo modo de ingreso, tomando de cada una de las partes una muestra para entrenamiento y otra para prueba para luego combinar toda esta data obteniendo como resultado una muestra final para prueba y otra para entrenamiento correspondiente con toda la vista minable. Esto se realizó con la finalidad de que la data de prueba y de entrenamiento de todo el dataset tuviese una proporción equitativa de cada uno de los valores del atributo clase "modo de ingreso".
+
+```{r}
+
+set.seed(123)
+data0 = datos[datos$mIngreso == 0,]
+data2 = datos[datos$mIngreso == 2,]
+data3 = datos[datos$mIngreso == 3,]
+
+#muestra de entrenamiento y prueba para cada una de las partes seleccionadas separandolas en un 20% para prueba y un 80% para entrenamiento
+
+muestra0 <- sample(nrow(data0), floor(nrow(data0) * 0.8), replace = F, prob= NULL) #se selecciona la muestra para el modo de ingreso 0 
+t_ent0 <- data0[muestra0,]
+t_prueba0 <- data0[-muestra0,]
+
+muestra2 <- sample(nrow(data2), floor(nrow(data2) * 0.8), replace = F, prob= NULL) #se selecciona la muestra para el modo de ingreso 0 
+t_ent2 <- data2[muestra2,]
+t_prueba2 <- data2[-muestra2,]
+
+muestra3 <- sample(nrow(data3), floor(nrow(data3) * 0.8), replace = F, prob= NULL) #se selecciona la muestra para el modo de ingreso 0 
+t_ent3 <- data3[muestra3,]
+t_prueba3 <- data3[-muestra3,]
+
+#Union de todas las muestras de entrenamiento
+t_entT = merge(t_ent0, merge(t_ent2, t_ent3 ,all = TRUE), all = TRUE)
+#Union de todas las muestras de prueba
+t_pruebaT = merge(t_prueba0, merge(t_prueba2, t_prueba3 ,all = TRUE), all = TRUE)
+
+
+```
+###Arbol de Desición
+-Para generar el modelo de Arbol de desición se utilizó la funcion rpart a la cual se le pasó como parametro: la formula "mIngreso ~ ." en donde se le especifica que, a partir de todos los campos, se va a predecir el atributo mIngreso; La data a utilizar, en la cual se le paso la data de entrenamiento, y finalemnte el metodo "class" en el que se indica que se utilizará un arbol de clasificación.
+
+```{r}
+#Se crea y grafica el arbol de desicion con la muestra----
+tree <- rpart(mIngreso ~ ., data = t_entT , method ="class")
+rpart.plot(tree)
+
+```
+
+-Para visualizar el desempeño del arbol de desición se realizó una matriz de confusión y se calculó la tasa de aciertos del algoritmo.
+
+```{r}
+predictA<-predict(tree, t_pruebaT, type = "class")
+matrizConfA<-table(t_pruebaT$mIngreso,predictA)
+
+AciertosA = ((matrizConfA[1,1] + matrizConfA[2,2] + matrizConfA[3,3])/ nrow(t_pruebaT))* 100
+AciertosA
+```
+
+###Reglas de clasificación
+
+-Para generar el modelo basado en reglas de clasificaciÃ³n se utilizÃ³  la función JRip a la cual se le pasó como parametro una fórmula y la data de entrenamiento  dicha fórmula especifica que, a partir de todos los campos, se va a predecir el atributo mIngreso. 
+```{r}
+t_entT$mIngreso = as.factor(t_entT$mIngreso)
+t_pruebaT$mIngreso = as.factor(t_pruebaT$mIngreso)
+rclasificacion <- JRip(formula = mIngreso ~ ., data = t_entT)
+
+```
+
+-Para visualizar el desempeño del modelo basado en reglas de clasificación se realizó una matriz de confusión y se calculó la tasa de aciertos del algoritmo
+```{r}
+predictC = predict(rclasificacion, t_pruebaT, type = "class")
+matrizConfC <- table(t_pruebaT$mIngreso, predictC)
+ 
+
+AciertosC = ((matrizConfC[1,1] + matrizConfC[2,2] + matrizConfC[3,3])/ nrow(t_pruebaT))* 100
+AciertosC
+
+```
+###K vecinos
+-Para generar el modelo basado en k-vecinos se utilizó  la función knn y, al igual que en los modelos anteriores, se realizó una matriz de confusión y se calculó la tasa de aciertos para evaluar el desempeño del modelo 
+
+```{r}
+trainLabels <- t_entT$mIngreso
+testLabels <- t_pruebaT$mIngreso
+  
+predictK <- knn(train = t_entT, test = t_pruebaT, cl = trainLabels, k=14)
+matrizConfK <- table(testLabels, predictK)
+
+AciertosK = ((matrizConfK[1,1] + matrizConfK[2,2] + matrizConfK[3,3])/ nrow(t_pruebaT))* 100
+AciertosK
+```
+
+###Analisis ROC para los 3 algoritmos.
+
+```{r}
+ra = roc(t_pruebaT$mIngreso, as.integer(predictA), levels=c(0,2,3))
+plot(ra)
+
+rc = roc(t_pruebaT$mIngreso, as.integer(predictC), levels=c(0,2,3))
+plot(rc)
+
+rk = roc(t_pruebaT$mIngreso, as.integer(predictK), levels=c(0,2,3))
+plot(rk)
+
+```
+
+En el análisis se puedo observar que el modelo de reglas de clasificación obtuvo un menor porcentaje de error en cuanto a los modelos restantes debido a que el AUC obtuvo area de 0.73 considerandose como una exactitud moderada. Cabe destacar que, debido a que se tiene poca data para realizar entrenamiento, los algoritmos no poseen un desempeño óptimo, por lo que en ocasiones el AUC de los modelos podría variar.
+
