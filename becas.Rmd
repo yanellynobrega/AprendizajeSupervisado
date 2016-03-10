@@ -113,7 +113,7 @@ AciertosA
 
 ###Reglas de clasificación
 
--Para generar el modelo basado en reglas de clasificaciÃ³n se utilizÃ³  la función JRip a la cual se le pasó como parametro una fórmula y la data de entrenamiento  dicha fórmula especifica que, a partir de todos los campos, se va a predecir el atributo mIngreso. 
+Para generar el modelo basado en reglas de clasificaciÃ³n se utilizÃ³  la función JRip a la cual se le pasó como parametro una fórmula y la data de entrenamiento  dicha fórmula especifica que, a partir de todos los campos, se va a predecir el atributo mIngreso. 
 ```{r}
 t_entT$mIngreso = as.factor(t_entT$mIngreso)
 t_pruebaT$mIngreso = as.factor(t_pruebaT$mIngreso)
@@ -121,7 +121,7 @@ rclasificacion <- JRip(formula = mIngreso ~ ., data = t_entT)
 
 ```
 
--Para visualizar el desempeño del modelo basado en reglas de clasificación se realizó una matriz de confusión y se calculó la tasa de aciertos del algoritmo
+Para visualizar el desempeño del modelo basado en reglas de clasificación se realizó una matriz de confusión y se calculó la tasa de aciertos del algoritmo
 ```{r}
 predictC = predict(rclasificacion, t_pruebaT, type = "class")
 matrizConfC <- table(t_pruebaT$mIngreso, predictC)
@@ -132,7 +132,7 @@ AciertosC
 
 ```
 ###K vecinos
--Para generar el modelo basado en k-vecinos se utilizó  la función knn y, al igual que en los modelos anteriores, se realizó una matriz de confusión y se calculó la tasa de aciertos para evaluar el desempeño del modelo 
+Para generar el modelo basado en k-vecinos se utilizó  la función knn y, al igual que en los modelos anteriores, se realizó una matriz de confusión y se calculó la tasa de aciertos para evaluar el desempeño del modelo 
 
 ```{r}
 trainLabels <- t_entT$mIngreso
@@ -159,5 +159,5 @@ plot(rk)
 
 ```
 
-En el análisis se puedo observar que el modelo de reglas de clasificación obtuvo un menor porcentaje de error en cuanto a los modelos restantes debido a que el AUC obtuvo area de 0.73 considerandose como una exactitud moderada. Cabe destacar que, debido a que se tiene poca data para realizar entrenamiento, los algoritmos no poseen un desempeño óptimo, por lo que en ocasiones el AUC de los modelos podría variar.
+En el análisis se pudo observar que el modelo de reglas de clasificación obtuvo un menor porcentaje de error en cuanto a los modelos restantes debido a que el AUC obtuvo un área de 0.73 considerandose como una exactitud moderada. Cabe destacar que, debido a que se tiene poca data para realizar entrenamiento, los algoritmos no poseen un desempeño óptimo, por lo que en ocasiones el AUC de los modelos podría variar.
 
