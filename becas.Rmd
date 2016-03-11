@@ -145,6 +145,8 @@ AciertosK = ((matrizConfK[1,1] + matrizConfK[2,2] + matrizConfK[3,3])/ nrow(t_pr
 AciertosK
 ```
 
+Se puede observar que al calcular la tasa de aciertos de los 3 modelos a partir de la matriz de confusión el que arrojó una mayor tasa de aciertos fue el modelo basado en reglas de clasificación.
+
 ###Analisis ROC para los 3 algoritmos.
 
 ```{r}
