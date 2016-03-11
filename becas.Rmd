@@ -61,7 +61,7 @@ datos$grOdontologicos = as.integer(datos$grOdontologicos)
 ```
 
 ###Generando la data de entrenamiento y prueba
-La data de entrada fue divida en tres partes basÃ¡ndose en los 3 posibles valores: 0,2,3 que puede tomar el atributo modo de ingreso, tomando de cada una de las partes una muestra para entrenamiento y otra para prueba para luego combinar toda esta data obteniendo como resultado una muestra final para prueba y otra para entrenamiento correspondiente con toda la vista minable. Esto se realizó con la finalidad de que la data de prueba y de entrenamiento de todo el dataset tuviese una proporción equitativa de cada uno de los valores del atributo clase "modo de ingreso".
+La data de entrada fue divida en tres partes basándose en los 3 posibles valores: 0,2,3 que puede tomar el atributo modo de ingreso, tomando de cada una de las partes una muestra para entrenamiento y otra para prueba para luego combinar toda esta data obteniendo como resultado una muestra final para prueba y otra para entrenamiento correspondiente con toda la vista minable. Esto se realizó con la finalidad de que la data de prueba y de entrenamiento de todo el dataset tuviese una proporción equitativa de cada uno de los valores del atributo clase "modo de ingreso".
 
 ```{r}
 
@@ -92,7 +92,7 @@ t_pruebaT = merge(t_prueba0, merge(t_prueba2, t_prueba3 ,all = TRUE), all = TRUE
 
 ```
 ###Arbol de Desición
--Para generar el modelo de Arbol de desición se utilizó la funcion rpart a la cual se le pasó como parametro: la formula "mIngreso ~ ." en donde se le especifica que, a partir de todos los campos, se va a predecir el atributo mIngreso; La data a utilizar, en la cual se le paso la data de entrenamiento, y finalemnte el metodo "class" en el que se indica que se utilizará un arbol de clasificación.
+Para generar el modelo de Arbol de desición se utilizó la funcion rpart a la cual se le pasó como parametro: la formula "mIngreso ~ ." en donde se le especifica que, a partir de todos los campos, se va a predecir el atributo mIngreso; La data a utilizar, en la cual se le paso la data de entrenamiento, y finalemnte el metodo "class" en el que se indica que se utilizará un arbol de clasificación.
 
 ```{r}
 #Se crea y grafica el arbol de desicion con la muestra----
