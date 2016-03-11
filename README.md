@@ -1,4 +1,4 @@
-# [Preprocesamiento de datos - Yanelly Nóbrega](https://github.com/DataMiningUCV/preprocesamiento-de-datos-yanellynobrega)
+# [Aprendizaje supervisado - Yanelly Nóbrega](https://github.com/DataMiningUCV/preprocesamiento-de-datos-yanellynobrega)
 
 
 ## Ambiente de trabajo
