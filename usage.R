@@ -13,31 +13,31 @@ source('google_api.R')
 
 data <- read.xlsx("C:/Users/Yanelly/Documents/asignacion_2/hogares.xlsx", sheetIndex = 1, startRow = 1, endRow = 104, header = T, encoding = 'UTF-8')
 
-destino <- c("Piazzale Aldo Moro") 
-api_key <- "AIzaSyCf1UmIBm0KKHcA0gmtRixYjX00-bAC77g"
+destino <- "Piazzale Aldo Moro" 
+api_key <- "AIzaSyBAbxK08gj2m2dAWKGesuNvQiz6Pb3kyNs"
 data$Duracion <- 0
+
+data$Dirección <- gsub("\n", " ", data$Dirección)
+data$Distrito <- gsub("\n", " ", data$Distrito)
 
 for(i in 1:nrow(data)){
 
-  origen = c(data$Dirección[i]," ", data$Distrito[i])
-  origen <- strsplit(as.character(origen), "\n")
+  origen <- c(data$Dirección[i]," ",data$Distrito[i])
   api_url <- get_url(origen, destino, api_key)
   
   datos <- get_data(api_url)
   
-  json <- parse_data(datos) 
+  json <- parse_data(datos)
   json = as.data.frame(json)
-  
-  d = as.character(json$duration$text)
-  duracion = na.omit(as.numeric(unlist(strsplit(unlist(d), "[^0-9]+"))))
-  
-  if(length(duracion>1))
-    data$Duracion[i] <- duracion[1] * 60 + duracion[2]
-  else
-    data$Duracion[i] <- duracion[1]
+  print(json)
 
+  if(length(json$duration$value) > 0)
+    data$Duracion[i] <- json$duration$value / 60 
+  else data$Duracion[i] <- 0 
+ 
 }
-
+data$Duracion = floor(data$Duracion)
+data = f
 #Tipo de inmueble
 data$Tipo.de.Inmueble <- as.character(data$Tipo.de.Inmueble) 
 data$Tipo.de.Inmueble[grepl("Ap", data$Tipo.de.Inmueble)] <- 1 
@@ -154,7 +154,8 @@ data$Piso <- NULL
 data$Habitaciones.Disp <- as.numeric(data$Habitaciones.Disp) 
 data$Precio.Mensual <- as.numeric(data$Precio.Mensual) 
 
-
+dataMujer = data[data$Sexo != 1,]
+dataHombre = data[data$Sexo != 0, ]
 
 
 

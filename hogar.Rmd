@@ -8,9 +8,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##Pasos relizados para la elaboración de la Actividad 1.
+#Pasos relizados para la elaboración de la Actividad 1.
 
-###Importación de la data.
+##Importación de la data.
 Instalación de paquetes e importación de los mismos los cuales fueron necesarios para realizar la actividad.
 ```{r }
 #install.packages('xlsx')
@@ -33,6 +33,39 @@ source('google_api.R')
 data = read.xlsx("C:/Users/Yanelly/Documents/asignacion_2/hogares.xlsx", sheetIndex = 1, startRow = 1, endRow = 104, header = T, encoding = 'UTF-8')
 
 ```
+
+##Uso del api
+
+Seteamos la data destino que se va a utilizar para la llamada del api, se utiliza el api key creado para realizar las peticiones al mismo y luego se alamcena cada una de las duraciones en el data set.
+
+
+```{r}
+destino <- "Piazzale Aldo Moro" 
+api_key <- "AIzaSyBAbxK08gj2m2dAWKGesuNvQiz6Pb3kyNs"
+data$Duracion <- 0
+
+data$Dirección <- gsub("\n", " ", data$Dirección)
+data$Distrito <- gsub("\n", " ", data$Distrito)
+
+for(i in 1:nrow(data)){
+
+  origen <- c(data$Dirección[i]," ",data$Distrito[i])
+  api_url <- get_url(origen, destino, api_key)
+  
+  datos <- get_data(api_url)
+  
+  json <- parse_data(datos)
+  json = as.data.frame(json)
+  print(json)
+
+  if(length(json$duration$value) > 0)
+    data$Duracion[i] <- json$duration$value / 60 
+  else data$Duracion[i] <- 0 
+ 
+}
+
+```
+
 
 ##Preprocesamineto
 
