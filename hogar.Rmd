@@ -1,0 +1,197 @@
+---
+title: "hogar.Rmd"
+author: "Yanelly Nóbrega"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Pasos relizados para la elaboración de la Actividad 1.
+
+###Importación de la data.
+Instalación de paquetes e importación de los mismos los cuales fueron necesarios para realizar la actividad.
+```{r }
+#install.packages('xlsx')
+#install.packages('curl')
+#install.packages('stringr')
+#install.packages('xlsx')
+#install.packages('stringi')
+require('stringi')
+library('xlsx')
+library('jsonlite')
+library('stringr')
+library('curl')
+source('google_api.R')
+
+```
+
+
+##Lectura del archivo provisto hogares.xlsx
+```{r }
+data = read.xlsx("C:/Users/Yanelly/Documents/asignacion_2/hogares.xlsx", sheetIndex = 1, startRow = 1, endRow = 104, header = T, encoding = 'UTF-8')
+
+```
+
+##Preprocesamineto
+
+Categorizacion del tipo de inmueble donde se le asigno 1 a los de tipo apartamento, 2 a los de tipo Monolocate y 0 a los Mini Apartamentos.
+```{r }
+#Tipo de inmueble
+data$Tipo.de.Inmueble <- as.character(data$Tipo.de.Inmueble) 
+data$Tipo.de.Inmueble[grepl("Ap", data$Tipo.de.Inmueble)] <- 1 
+data$Tipo.de.Inmueble[grepl("Mini", data$Tipo.de.Inmueble)] <- 0
+data$Tipo.de.Inmueble[grepl("Monolocale", data$Tipo.de.Inmueble)] <- 2
+data$Tipo.de.Inmueble <- as.numeric(data$Tipo.de.Inmueble) 
+```
+
+
+Se agregaron nuevos campos correspondientes con la data extra contenida en el campo precio mensual.
+```{r }
+#precios y habitaciones disponibles
+data$calefaccion <- ifelse(grepl("riscaldamento",data$Precio.Mensual),1,0)
+data$condominio <- ifelse(grepl("condominio",data$Precio.Mensual),1,0)
+data$servicios.No.Inc <- ifelse(grepl("escluse",data$Precio.Mensual),1,0)
+data$Todo.Incluido <- ifelse(grepl("(TUTTO)|(tutto)|(Tutto)",data$Precio.Mensual),1,0)
+```
+
+A continuacion se opera toda la data contenida en habitaciones disponibles y precio mensual del dataset debido a que se encuentran mas de una habitacion en varios de los campos mencionados.
+
+La siguiente función es para el primer tipo de habitacion de cada campo por lo que se comienza a recorrer el string de izquierda a derecha y, la primera coincidencia, bien sea de singole(1), doppia(2), intero appartamento(3) o posto letto(4) es retornada para ser almacenada en la fila correspondiente.
+```{r }
+##funciones para habitaciones
+habitacion <- function(x){
+  for(i in 1:stri_length(x)){
+    if (substr(x, i ,i+3) == "sing" || substr(x,i,i+3) == "Sing" )
+      return(1)
+    else 
+      if (substr(x,i ,i+3) == "Dopp" || substr(x,i ,i+3) == "dopp" )
+        return(2)
+      else
+        if (substr(x,i ,i+3) == "appa" || substr(x,i ,i+3) == "Appa" )
+          return(3)
+        else
+          if (substr(x,i ,i+3) == "post" || substr(x,i ,i+3) == "Post" )
+            return(4)
+  }
+  return(3)
+}
+
+```
+
+Esta función es para las restantes habitaciones ocupadas en cada campo por lo que el string es recorrido de derecha a izquierda identificando cual es la segunda habitacion que esta disponible, igualmente se retorna la primera que encuentre. En este caso se omite el tipo "intero appartamento" ya que el mismo se encuentra solamente en los campos que poseen una sola habitación.
+
+```{r }
+habitacion2 <- function(x){
+  for(i in stri_length(x):1){
+    if (substr(x, i-3 ,i) == "sing" || substr(x,i-3,i) == "Sing" )
+      return(1)
+    else 
+      if (substr(x,i-3 ,i) == "Dopp" || substr(x,i-3 ,i) == "dopp" )
+        return(2)
+      else
+        if (substr(x,i ,i+3) == "post" || substr(x,i ,i+3) == "Post" )
+          return(4)
+  }
+  return(5)
+}
+```
+
+
+Para el atributo "precio mensual" se limpia cada uno de los registros de dicho atributo obteniendo como resultado un arreglo el cual contiene en cada posicion el precio de cada habitación (esto en caso de que el registro contenga mas de una habitación). 
+
+Se numerizan los registros del atributo "habitacion disponible" que solo contienen una sola habitación. Haciendo uso del arreglo mencionado anteriormente, sabemos que, si dicho arreglo es de tamaño 1, el campo contiene una sola habitación, Luego se procede a numerizar utilizando la funcion "habitacion" mencionada anteriormente   
+```{r }
+data$Habitaciones.Disp <- as.character(data$Habitaciones.Disp)
+data$Precio.Mensual <- as.character(data$Precio.Mensual)
+data$Habitaciones.Disponibles <- as.character(data$Habitaciones.Disponibles)
+
+size <- nrow(data)
+for(i in 1:size){
+  precios <- data$Precio.Mensual[i]
+  precios <-  na.omit(as.numeric(unlist(strsplit(unlist(precios), "[^0-9]+"))))
+  if(length(precios) == 1)
+    data$Habitaciones.Disp[i] <- habitacion(data$Habitaciones.Disponibles[i])
+}
+```
+
+Para los campos que contienen mas de una habitacion, se hace una copia de este registro colocando cada habitacion en filas distintas haciendo uso de las funciones y el arreglo mencionado.
+
+```{r }
+for(i in 1:size){
+  precios <- data$Precio.Mensual[i]
+  precios <-  na.omit(as.numeric(unlist(strsplit(unlist(precios), "[^0-9]+"))))
+  data$Precio.Mensual[i] = as.character(precios[1])
+  row <- data[i,]
+  j <- 2
+  f = as.character(precios[3])
+  if(length(precios)>2 && ((as.character(precios[3])) == 55 ||  (as.character(precios[3])) == 50))
+    x <- 2  
+  else
+    x <- length(precios)
+  while(x > 1){
+    if(j == 2){
+      data$Habitaciones.Disp[i] <- habitacion(data$Habitaciones.Disponibles[i])  
+    }
+    row$Precio.Mensual <- as.character(precios[j])
+    row$Habitaciones.Disp <- habitacion2(row$Habitaciones.Disponibles)
+    data <- rbind(data, row)
+    j <- j + 1
+    x <- x - 1
+  }
+}
+```
+
+
+Para el campo notas se extrajo la información de si la habitación es para mujer, hombre o para ambos.
+```{r }
+#notas
+data$Sexo[grepl("(ragazzi)", data$Notas)] <-  0
+data$Sexo[grepl("(ragazze)", data$Notas)] <-  1
+data$Sexo[grepl("(ragazze/i)|(ragazzi/e)|(ragazzi/ragazze)|(ragazze/ragazzi)", data$Notas)] <- 2
+data$Sexo[39] <- 0
+```
+
+
+Se generaron nuevos campos binarizados a  partir del campo descripción, indicando si el hogar tiene entrada, cocina balcón e  internet 
+```{r }
+
+#descripcion
+data$Entrada <- ifelse(grepl("(ingresso)|(Ingresso)",data$Descripción),1,0)
+data$Cocina <- ifelse(grepl("cucina",data$Descripción),1,0)
+data$Salon <- ifelse(grepl("sal",data$Descripción),1,0)
+data$Balcon <- ifelse(grepl("balcone",data$Descripción),1,0)
+data$Internet <- ifelse(grepl("internet",data$Descripción),1,0)
+
+```
+
+tambien se generaron dos campos categorizados para habitacion y baño. 
+```{r }
+data$Habitacion <- 0 
+data$Habitacion[grepl("(camer)", data$Descripción)] <- 1
+data$Habitacion[grepl("(2.?camer)", data$Descripción)] <- 2
+data$Habitacion[grepl("(3.?camer)", data$Descripción)] <- 3
+data$Habitacion[grepl("(4.?camer)", data$Descripción)] <- 4
+
+data$Baño <- 0 
+data$Baño[grepl("(bagno)", data$Descripción)] <- 1
+data$Baño[grepl("(2.?bagni)", data$Descripción)] <- 2
+data$Baño[grepl("(3.?bagni)", data$Descripción)] <- 3
+data$Baño[grepl("(4.?bagni)", data$Descripción)] <- 4
+
+```
+
+
+Se eliminan atributos no necesarios y se cambia a formato númerico los que se consideran necesarios.
+```{r }
+data$Descripción <- NULL
+data$Habitaciones.Disponibles <- NULL
+data$Notas <- NULL
+data$Foto <- NULL
+data$Piso <- NULL
+data$Habitaciones.Disp <- as.numeric(data$Habitaciones.Disp) 
+data$Precio.Mensual <- as.numeric(data$Precio.Mensual) 
+```
+
+
