@@ -8,9 +8,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Pasos relizados para la elaboración de la Actividad 1.
+##Pasos relizados para la elaboración de la Actividad 1.
 
-##Importación de la data.
+###Importación de la data.
 Instalación de paquetes e importación de los mismos los cuales fueron necesarios para realizar la actividad.
 ```{r }
 #install.packages('xlsx')
@@ -28,13 +28,13 @@ source('google_api.R')
 ```
 
 
-##Lectura del archivo provisto hogares.xlsx
+###Lectura del archivo provisto hogares.xlsx
 ```{r }
 data = read.xlsx("C:/Users/Yanelly/Documents/asignacion_2/hogares.xlsx", sheetIndex = 1, startRow = 1, endRow = 104, header = T, encoding = 'UTF-8')
 
 ```
 
-##Uso del api
+###Uso del api
 
 Seteamos la data destino que se va a utilizar para la llamada del api, se utiliza el api key creado para realizar las peticiones al mismo y luego se alamcena cada una de las duraciones en el data set.
 
@@ -67,7 +67,7 @@ for(i in 1:nrow(data)){
 ```
 
 
-##Preprocesamineto
+###Preprocesamineto
 
 Categorizacion del tipo de inmueble donde se le asigno 1 a los de tipo apartamento, 2 a los de tipo Monolocate y 0 a los Mini Apartamentos.
 ```{r }
