@@ -228,3 +228,9 @@ data$Precio.Mensual <- as.numeric(data$Precio.Mensual)
 ```
 
 
+###Regresión Lineal 
+
+```{r }
+dataMujer = data[data$Sexo != 1,]
+dataHombre = data[data$Sexo != 0, ]
+```
