@@ -200,15 +200,15 @@ tambien se generaron dos campos categorizados para habitacion y baño.
 ```{r }
 data$Habitacion <- 0 
 data$Habitacion[grepl("(camer)", data$Descripción)] <- 1
-data$Habitacion[grepl("(2.?camer)", data$Descripción)] <- 2
-data$Habitacion[grepl("(3.?camer)", data$Descripción)] <- 3
-data$Habitacion[grepl("(4.?camer)", data$Descripción)] <- 4
+data$Habitacion[grepl("(2 camer)", data$Descripción)] <- 2
+data$Habitacion[grepl("(3 camer)", data$Descripción)] <- 3
+data$Habitacion[grepl("(4 camer)", data$Descripción)] <- 4
 
 data$Baño <- 0 
 data$Baño[grepl("(bagno)", data$Descripción)] <- 1
-data$Baño[grepl("(2.?bagni)", data$Descripción)] <- 2
-data$Baño[grepl("(3.?bagni)", data$Descripción)] <- 3
-data$Baño[grepl("(4.?bagni)", data$Descripción)] <- 4
+data$Baño[grepl("(2 bagni)", data$Descripción)] <- 2
+data$Baño[grepl("(3 bagni)", data$Descripción)] <- 3
+data$Baño[grepl("(4 bagni)", data$Descripción)] <- 4
 
 ```
 
