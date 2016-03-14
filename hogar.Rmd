@@ -8,7 +8,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##Pasos relizados para la elaboración de la Actividad 1.
 
 ###Importación de la data.
 Instalación de paquetes e importación de los mismos los cuales fueron necesarios para realizar la actividad.
@@ -56,8 +55,6 @@ for(i in 1:nrow(data)){
   
   json <- parse_data(datos)
   json = as.data.frame(json)
-  print(json)
-
   if(length(json$duration$value) > 0)
     data$Duracion[i] <- json$duration$value / 60 
   else data$Duracion[i] <- 0 
@@ -236,7 +233,7 @@ dataM = subset.data.frame(data, Sexo == "1" | Sexo == "2")
 
 ```
 
- Se pudo observar, a partir de pruebas, que no exite una variable en especifico que tenga una alta correlacion con el precio, sin embargo hubo variables como la duracion y habitaciones disponibles que si tenian un  considerable nivel de correlacion por lo que se utilizó una regresión múltiple, haciendo uso de las variables que se consideraron útiles para asi obtener una mejor predicción.
+ Se pudo observar, a partir de la generacion de varios modelos, que no exite una variable en especifico que tenga una alta correlacion con el precio, sin embargo hubo variables como la duración y habitaciones disponibles que si tenian un  considerable nivel de correlación por lo que se utilizó una regresión múltiple, haciendo uso de las variables que se consideraron útiles para asi obtener una mejor predicción.
 
 
 ###Modelo para hombres
@@ -248,10 +245,36 @@ regresionH <- predict(modeloH, newdata = dataH)
 
 ```
 
-
 ###Modelo para mujeres
 ```{r}
 modeloM <- lm(dataM$Precio.Mensual ~ dataM$Duracion + dataM$Todo.Incluido + dataM$Habitaciones.Disp + dataM$Cocina + dataM$Salon + dataM$Balcon + dataM$Habitacion + dataM$Baño)
 
 regresionM <- predict(modeloH, newdata = dataM)
+```
+
+###Mejor apartamento disponible
+
+Dado que la data fue categorizada o binarizada (dependiendo de cada caso) calculamos cual es el mejor apartamento disponible sumando las columnas que correspondan con sus características físicas y diviendolas entre el precio precio mensual de cada uno de los apartamentos.
+
+```{r }
+mejorAp = data
+
+mejorAp$Dirección <- NULL
+mejorAp$Distrito <- NULL
+mejorAp$Tipo.de.Inmueble <- NULL
+mejorAp$Precio.Mensual <- NULL
+mejorAp$Duracion <- NULL
+mejorAp$servicios.No.Inc <- NULL
+mejorAp$Sexo <- NULL
+
+mejorAp$peso <- 0
+for (i in seq(1:(ncol(mejorAp)-1))){
+  mejorAp$peso <- mejorAp$peso + mejorAp[i]
+}
+
+mejorAp$final = (mejorAp$peso / data$Precio.Mensual) * 100
+
+data$Dirección[which.max(as.numeric(unlist(mejorAp$final)))]
+data$Distrito[which.max(as.numeric(unlist(mejorAp$final)))]
+
 ```
