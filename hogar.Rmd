@@ -239,7 +239,7 @@ dataM = subset.data.frame(data, Sexo == "1" | Sexo == "2")
  Se pudo observar, a partir de pruebas, que no exite una variable en especifico que tenga una alta correlacion con el precio, sin embargo hubo variables como la duracion y habitaciones disponibles que si tenian un  considerable nivel de correlacion por lo que se utilizó una regresión múltiple, haciendo uso de las variables que se consideraron útiles para asi obtener una mejor predicción.
 
 
-Modelo para hombre
+##Modelo para hombres
 ```{r }
 
 modeloH <- lm(dataH$Precio.Mensual ~ dataH$Duracion + dataH$Todo.Incluido + dataH$Habitaciones.Disp + dataH$Cocina + dataH$Salon + dataH$Balcon + dataH$Habitacion + dataH$Baño)
@@ -249,7 +249,7 @@ regresionH <- predict(modeloH, newdata = dataH)
 ```
 
 
-Modelo para mujeres
+##Modelo para mujeres
 ```{r}
 modeloM <- lm(dataM$Precio.Mensual ~ dataM$Duracion + dataM$Todo.Incluido + dataM$Habitaciones.Disp + dataM$Cocina + dataM$Salon + dataM$Balcon + dataM$Habitacion + dataM$Baño)
 
